@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
+import secrets
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,11 +23,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#7q$!x$@+s8@z7)a3j!277l*(xf&zu4*x8uokc_w4@9s@vr1=r'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+# The secret key is never stored in this file. Export DJANGO_SECRET_KEY instead.
+# With DEBUG on we fall back to a throwaway key generated per process, so
+# sessions and password-reset links do not survive a restart. That is fine for
+# development and never acceptable in production.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured(
+            'DJANGO_SECRET_KEY must be set when DEBUG is off.'
+        )
+    SECRET_KEY = secrets.token_urlsafe(50)
 
 ALLOWED_HOSTS = []
 
@@ -37,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'jornadas',
 ]
 
 MIDDLEWARE = [
@@ -104,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'pt-BR'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 

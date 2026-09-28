@@ -6,9 +6,9 @@ managers review productivity as charts. Django 5.2 (LTS) on Python 3.14,
 SQLite. `README.md` is the roadmap and is written in pt-BR — read it before
 scoping work.
 
-Current state: fresh `startproject` output. No apps, no models, no migrations,
-no tests, no requirements file. Treat anything below about apps/models as
-"not built yet", not "missing".
+Current state: the `jornadas` app is scaffolded and registered, but holds no
+models, migrations, or tests yet. Treat anything below about models as "not
+built yet", not "missing". See `impl-plan.md` for the phased DB plan.
 
 ## Read the Django docs first
 
@@ -43,8 +43,9 @@ gestor/                  <- Django project root: where manage.py lives, NOT in g
     └── wsgi.py, asgi.py
 ```
 
-Apps do not exist yet. Create them as
-`python manage.py startapp <app>` and register in `INSTALLED_APPS`.
+The `jornadas` app holds the domain models and is the only app. Create
+further apps as `python manage.py startapp <app>` and register them in
+`INSTALLED_APPS`.
 
 ## Commands
 
@@ -59,6 +60,13 @@ python manage.py check
 There is no virtualenv. `requirements.txt` pins `Django==5.2.13`, installed in
 the system interpreter alongside its own dependencies. If you add a package,
 also pin it in `requirements.txt`, and update this section.
+
+`SECRET_KEY` is read from the `DJANGO_SECRET_KEY` environment variable and no
+secret is committed. With `DEBUG = True` and the variable unset, settings fall
+back to a throwaway key generated per process, so the commands above work with
+no setup — but sessions and password-reset links will not survive a restart.
+Set the variable for a stable key. With `DEBUG` off, a missing
+`DJANGO_SECRET_KEY` raises `ImproperlyConfigured`.
 
 ## Conventions
 
