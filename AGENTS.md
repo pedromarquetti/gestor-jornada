@@ -56,9 +56,9 @@ python manage.py test
 python manage.py check
 ```
 
-There is no virtualenv and no dependency manifest — Django is installed in
-the system interpreter. If you add a package, also add a `requirements.txt`
-pinning it, and update this section.
+There is no virtualenv. `requirements.txt` pins `Django==5.2.13`, installed in
+the system interpreter alongside its own dependencies. If you add a package,
+also pin it in `requirements.txt`, and update this section.
 
 ## Conventions
 
