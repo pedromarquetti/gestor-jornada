@@ -22,11 +22,14 @@ período de trabalho.
 
 ### Lista de implementação
 
+> [!NOTE]
+> Essa lista pode sofrer modificações e é apenas um guia geral de implementação.
+
 - [ ] **Tela de administração** - Tela utilizada por gestores para avaliar,
       através de gráficos, a produtividade de funcionários.
 - [ ] **Tela de cadastro** - Tela para cadastro de produtividade com campos de
       atividade realizada, inicio e término.
-- [ ] **DB** - Estrutura do banco de dados para armazenamento.
+- [x] **DB** - Estrutura do banco de dados para armazenamento.
 - [ ] **API** - Configuração de API básica para consulta rápida de dados.
 - [ ] **Docker** - Configuração de Dockerfile para deploy.
 

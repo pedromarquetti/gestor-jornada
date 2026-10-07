@@ -6,10 +6,14 @@ managers review productivity as charts. Django 5.2 (LTS) on Python 3.14,
 SQLite. `README.md` is the roadmap and is written in pt-BR — read it before
 scoping work.
 
-Current state: `jornadas.Role` and `jornadas.User` (a custom `AUTH_USER_MODEL`
-carrying a `role` FK) are built and migrated; `Role` rows are seeded by data
-migration `0002_seed_roles`. The `Task` model is "not built yet", not
-"missing". 
+Current state: the DB plan is complete. `jornadas`
+ships `Role` (seeded `user`/`admin` by `0002_seed_roles`), `User` (custom
+`AUTH_USER_MODEL` with a `role` FK), and `Task` with an end-after-start CHECK
+and a `(user_id, started_at DESC)` index; `TaskQuerySet` adds `with_duration`,
+`for_user`, `between`, and `total_hours`. All three models are registered in
+the admin, and `ensure_admin` recreates the superuser from `.env`. Next up from
+the roadmap: the task-tracking UI, API, charts, and Docker — nothing is wired
+beyond `/admin/`. 
 
 ## Read the Django docs first
 
