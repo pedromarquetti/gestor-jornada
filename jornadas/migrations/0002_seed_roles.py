@@ -17,9 +17,8 @@ def delete_roles(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('jornadas', '0001_initial'),
+        ("jornadas", "0001_initial"),
     ]
 
     operations = [

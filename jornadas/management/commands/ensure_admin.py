@@ -7,7 +7,9 @@ from jornadas.models import Role
 
 
 class Command(BaseCommand):
-    help = "Cria ou atualiza o usuário administrador usando ADMIN_USER/ADMIN_PWD do .env."
+    help = (
+        "Cria ou atualiza o usuário administrador usando ADMIN_USER/ADMIN_PWD do .env."
+    )
 
     def handle(self, *args, **options):
         username = os.environ.get("ADMIN_USER", "admin")
