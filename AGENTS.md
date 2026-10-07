@@ -6,9 +6,10 @@ managers review productivity as charts. Django 5.2 (LTS) on Python 3.14,
 SQLite. `README.md` is the roadmap and is written in pt-BR — read it before
 scoping work.
 
-Current state: the `jornadas` app is scaffolded and registered, but holds no
-models, migrations, or tests yet. Treat anything below about models as "not
-built yet", not "missing". See `impl-plan.md` for the phased DB plan.
+Current state: `jornadas.Role` and `jornadas.User` (a custom `AUTH_USER_MODEL`
+carrying a `role` FK) are built and migrated; `Role` rows are seeded by data
+migration `0002_seed_roles`. The `Task` model is "not built yet", not
+"missing". 
 
 ## Read the Django docs first
 
@@ -38,7 +39,7 @@ gestor/                  <- Django project root: where manage.py lives, NOT in g
 ├── .gitignore
 ├── db.sqlite3           0 bytes, gitignored
 └── gestorjornada/       <- git repo root; the Python package
-    ├── settings.py      single-file settings, no env-var layer yet
+    ├── settings.py      single-file settings, .env loaded via python-dotenv
     ├── urls.py          only /admin/ is wired
     └── wsgi.py, asgi.py
 ```
@@ -55,18 +56,29 @@ python manage.py makemigrations <app>
 python manage.py runserver
 python manage.py test
 python manage.py check
+python manage.py ensure_admin   # create/update admin from ADMIN_USER/ADMIN_PWD
 ```
 
-There is no virtualenv. `requirements.txt` pins `Django==5.2.13`, installed in
-the system interpreter alongside its own dependencies. If you add a package,
-also pin it in `requirements.txt`, and update this section.
+There is no virtualenv. `requirements.txt` pins `Django==5.2.13` and
+`python-dotenv==1.2.4`, installed in the system interpreter alongside its own
+dependencies. If you add a package, also pin it in `requirements.txt`, and
+update this section.
+
+`settings.py` calls `load_dotenv(BASE_DIR / '.env')` at import time. `.env` is
+gitignored and never committed.
 
 `SECRET_KEY` is read from the `DJANGO_SECRET_KEY` environment variable and no
 secret is committed. With `DEBUG = True` and the variable unset, settings fall
 back to a throwaway key generated per process, so the commands above work with
 no setup — but sessions and password-reset links will not survive a restart.
-Set the variable for a stable key. With `DEBUG` off, a missing
+Set the variable (e.g. in `.env`) for a stable key. With `DEBUG` off, a missing
 `DJANGO_SECRET_KEY` raises `ImproperlyConfigured`.
+
+`python manage.py ensure_admin` reads `ADMIN_USER` (default `admin`) and
+`ADMIN_PWD` from the environment; both are usually declared in `.env`. It
+idempotently creates or updates the superuser, assigning the seeded `admin`
+`Role` and re-hashing the password on every run. `migrate` never creates users,
+and the local SQLite DB is disposable — re-run `ensure_admin` after any rebuild.
 
 ## Conventions
 
@@ -81,9 +93,15 @@ Set the variable for a stable key. With `DEBUG` off, a missing
 - `{% url %}` over hardcoded paths.
 - Code, model names, and field names in English (`shift`, `activity`).
   User-facing strings, labels, help_text, and docs in pt-BR.
-- Migrations **are committed** (see `.gitignore` — only the ignore of
-  `**/migrations/**` dev-convenience lines exist; keep generated migrations
-  under version control).
+- Migrations **are committed**. Commit the model change and its generated
+  migration together, in one commit, per the Django docs. Never add
+  `**/migrations/**` back to `.gitignore`.
+- `User.role` is deliberately **excluded from `REQUIRED_FIELDS`**. Django's
+  `createsuperuser` passes required fields through `Field.clean()`, which
+  returns a raw pk, so a `ForeignKey` in `REQUIRED_FIELDS` makes the command
+  crash with `ValueError: must be a "Role" instance`. `UserManager`
+  assigns the `admin` role instead, and fails loudly (NOT NULL) if it ever
+  stops doing so. Do not "fix" this.
 - Tests go in `<app>/tests.py` or `<app>/tests/`, named `test_*.py`, classes
   `Test*`/`*TestCase` using `django.test.TestCase`. Write tests alongside any
   model, form, or view you add.
