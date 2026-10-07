@@ -51,6 +51,27 @@ class User(AbstractUser):
     objects = UserManager()
 
 
+class TaskQuerySet(models.QuerySet):
+    def with_duration(self):
+        return self.annotate(
+            duration=models.ExpressionWrapper(
+                models.F("ended_at") - models.F("started_at"),
+                output_field=models.DurationField(),
+            )
+        )
+
+    def for_user(self, user):
+        return self.filter(user=user)
+
+    def between(self, start, end):
+        return self.filter(started_at__range=(start, end))
+
+    def total_hours(self):
+        return sum(
+            (task.ended_at - task.started_at).total_seconds() / 3600 for task in self
+        )
+
+
 class Task(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -83,3 +104,5 @@ class Task(models.Model):
 
     def __str__(self):
         return self.activity
+
+    objects = TaskQuerySet.as_manager()

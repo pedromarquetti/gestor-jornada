@@ -57,11 +57,14 @@ python manage.py runserver
 python manage.py test
 python manage.py check
 python manage.py ensure_admin   # create/update admin from ADMIN_USER/ADMIN_PWD
+ruff check .                     # lint
+ruff format .                    # auto-format, Black-compatible
 ```
 
 There is no virtualenv. `requirements.txt` pins `Django==5.2.13` and
 `python-dotenv==1.2.4`, installed in the system interpreter alongside its own
-dependencies. If you add a package, also pin it in `requirements.txt`, and
+dependencies. Dev tooling (currently `ruff==0.16.10`) lives in
+`requirements-dev.txt`. If you add a package, pin it in one of those files, and
 update this section.
 
 `settings.py` calls `load_dotenv(BASE_DIR / '.env')` at import time. `.env` is
@@ -93,6 +96,8 @@ and the local SQLite DB is disposable — re-run `ensure_admin` after any rebuil
 - `{% url %}` over hardcoded paths.
 - Code, model names, and field names in English (`shift`, `activity`).
   User-facing strings, labels, help_text, and docs in pt-BR.
+- Format with Ruff. Config lives in `pyproject.toml` (`[tool.ruff]`); run
+  `ruff check --fix` before `ruff format`. Migrations are excluded (generated).
 - Migrations **are committed**. Commit the model change and its generated
   migration together, in one commit, per the Django docs. Never add
   `**/migrations/**` back to `.gitignore`.

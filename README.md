@@ -9,6 +9,7 @@
   - [Como rodar](#como-rodar)
     - [Dev](#dev)
     - [Variáveis de ambiente](#variáveis-de-ambiente)
+    - [Formatação e lint de código (Ruff)](#formatação-e-lint-de-código-ruff)
 
 <!--toc:end-->
 
@@ -68,3 +69,29 @@ Após criar o banco ou redefini-lo, crie/atualize o usuário administrador com:
 ```bash
 python3 manage.py ensure_admin
 ```
+
+### Formatação e lint de código (Ruff)
+
+Utilizamos [Ruff](https://github.com/astral-sh/ruff) (`ruff format` +
+`ruff check`) como formatador e linter. Não existe um formatador nativo no
+Python ou no Django — o padrão da comunidade é o Black, e o Ruff é a alternativa
+mais moderna: formato compatível com o Black (>99,9% idêntico), muito mais
+rápido, e que também faz lint e ordenação de imports em uma única ferramenta. A
+configuração fica em `pyproject.toml` sob `[tool.ruff]`.
+
+```bash
+# dependências de desenvolvimento
+python3 -m pip install -r requirements-dev.txt
+
+ruff check .         # lint
+ruff check . --fix   # corrige automaticamente
+ruff format .        # formata todos os arquivos
+ruff format --check .  # verifica no CI sem alterar arquivos
+```
+
+**Ordem recomendada:** rode `ruff check --fix` **antes** de `ruff format`
+(sempre que o formatador entrar em ação, o lint já esteve atualizado).
+
+> [!NOTE]
+> Se usar o VS Code, instale a extensão _Ruff_ e configure como formatador
+> padrão com _Format on Save_ para formatar automaticamente ao salvar.
