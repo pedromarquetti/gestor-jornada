@@ -6,9 +6,14 @@ managers review productivity as charts. Django 5.2 (LTS) on Python 3.14,
 SQLite. `README.md` is the roadmap and is written in pt-BR — read it before
 scoping work.
 
-Current state: fresh `startproject` output. No apps, no models, no migrations,
-no tests, no requirements file. Treat anything below about apps/models as
-"not built yet", not "missing".
+Current state: the DB plan is complete. `jornadas`
+ships `Role` (seeded `user`/`admin` by `0002_seed_roles`), `User` (custom
+`AUTH_USER_MODEL` with a `role` FK), and `Task` with an end-after-start CHECK
+and a `(user_id, started_at DESC)` index; `TaskQuerySet` adds `with_duration`,
+`for_user`, `between`, and `total_hours`. All three models are registered in
+the admin, and `ensure_admin` recreates the superuser from `.env`. Next up from
+the roadmap: the task-tracking UI, API, charts, and Docker — nothing is wired
+beyond `/admin/`. 
 
 ## Read the Django docs first
 
@@ -38,13 +43,14 @@ gestor/                  <- Django project root: where manage.py lives, NOT in g
 ├── .gitignore
 ├── db.sqlite3           0 bytes, gitignored
 └── gestorjornada/       <- git repo root; the Python package
-    ├── settings.py      single-file settings, no env-var layer yet
+    ├── settings.py      single-file settings, .env loaded via python-dotenv
     ├── urls.py          only /admin/ is wired
     └── wsgi.py, asgi.py
 ```
 
-Apps do not exist yet. Create them as
-`python manage.py startapp <app>` and register in `INSTALLED_APPS`.
+The `jornadas` app holds the domain models and is the only app. Create
+further apps as `python manage.py startapp <app>` and register them in
+`INSTALLED_APPS`.
 
 ## Commands
 
@@ -54,11 +60,32 @@ python manage.py makemigrations <app>
 python manage.py runserver
 python manage.py test
 python manage.py check
+python manage.py ensure_admin   # create/update admin from ADMIN_USER/ADMIN_PWD
+ruff check .                     # lint
+ruff format .                    # auto-format, Black-compatible
 ```
 
-There is no virtualenv and no dependency manifest — Django is installed in
-the system interpreter. If you add a package, also add a `requirements.txt`
-pinning it, and update this section.
+There is no virtualenv. `requirements.txt` pins `Django==5.2.13` and
+`python-dotenv==1.2.4`, installed in the system interpreter alongside its own
+dependencies. Dev tooling (currently `ruff==0.16.10`) lives in
+`requirements-dev.txt`. If you add a package, pin it in one of those files, and
+update this section.
+
+`settings.py` calls `load_dotenv(BASE_DIR / '.env')` at import time. `.env` is
+gitignored and never committed.
+
+`SECRET_KEY` is read from the `DJANGO_SECRET_KEY` environment variable and no
+secret is committed. With `DEBUG = True` and the variable unset, settings fall
+back to a throwaway key generated per process, so the commands above work with
+no setup — but sessions and password-reset links will not survive a restart.
+Set the variable (e.g. in `.env`) for a stable key. With `DEBUG` off, a missing
+`DJANGO_SECRET_KEY` raises `ImproperlyConfigured`.
+
+`python manage.py ensure_admin` reads `ADMIN_USER` (default `admin`) and
+`ADMIN_PWD` from the environment; both are usually declared in `.env`. It
+idempotently creates or updates the superuser, assigning the seeded `admin`
+`Role` and re-hashing the password on every run. `migrate` never creates users,
+and the local SQLite DB is disposable — re-run `ensure_admin` after any rebuild.
 
 ## Conventions
 
@@ -73,9 +100,17 @@ pinning it, and update this section.
 - `{% url %}` over hardcoded paths.
 - Code, model names, and field names in English (`shift`, `activity`).
   User-facing strings, labels, help_text, and docs in pt-BR.
-- Migrations **are committed** (see `.gitignore` — only the ignore of
-  `**/migrations/**` dev-convenience lines exist; keep generated migrations
-  under version control).
+- Format with Ruff. Config lives in `pyproject.toml` (`[tool.ruff]`); run
+  `ruff check --fix` before `ruff format`. Migrations are excluded (generated).
+- Migrations **are committed**. Commit the model change and its generated
+  migration together, in one commit, per the Django docs. Never add
+  `**/migrations/**` back to `.gitignore`.
+- `User.role` is deliberately **excluded from `REQUIRED_FIELDS`**. Django's
+  `createsuperuser` passes required fields through `Field.clean()`, which
+  returns a raw pk, so a `ForeignKey` in `REQUIRED_FIELDS` makes the command
+  crash with `ValueError: must be a "Role" instance`. `UserManager`
+  assigns the `admin` role instead, and fails loudly (NOT NULL) if it ever
+  stops doing so. Do not "fix" this.
 - Tests go in `<app>/tests.py` or `<app>/tests/`, named `test_*.py`, classes
   `Test*`/`*TestCase` using `django.test.TestCase`. Write tests alongside any
   model, form, or view you add.
