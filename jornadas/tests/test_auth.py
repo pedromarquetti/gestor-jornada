@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
 from django.test import TestCase
 
 from ..models import Role
@@ -22,12 +21,28 @@ class UserFixtures:
         )
 
     @classmethod
-    def admin(cls, username="admin_user", email="admin@example.com", password="AdminPass123!", **extra):
-        return cls.create_user(username, email, password, Role.objects.get(name=Role.ADMIN), **extra)
+    def admin(
+        cls,
+        username="admin_user",
+        email="admin@example.com",
+        password="AdminPass123!",
+        **extra,
+    ):
+        return cls.create_user(
+            username, email, password, Role.objects.get(name=Role.ADMIN), **extra
+        )
 
     @classmethod
-    def user(cls, username="user_jornadas", email="user@example.com", password="UserPass123!", **extra):
-        return cls.create_user(username, email, password, Role.objects.get(name=Role.USER), **extra)
+    def user(
+        cls,
+        username="user_jornadas",
+        email="user@example.com",
+        password="UserPass123!",
+        **extra,
+    ):
+        return cls.create_user(
+            username, email, password, Role.objects.get(name=Role.USER), **extra
+        )
 
 
 class AuthFlowTests(TestCase):

@@ -12,6 +12,7 @@
     - [Dev](#dev)
     - [Variáveis de ambiente](#variáveis-de-ambiente)
     - [Formatação e lint de código (Ruff)](#formatação-e-lint-de-código-ruff)
+    - [Operacional — Login / Sessão](#operacional-login-sessão)
 
 <!--toc:end-->
 
@@ -34,6 +35,10 @@ período de trabalho.
 - [x] **DB** - Estrutura do banco de dados para armazenamento.
 - [ ] **API** - Configuração de API básica para consulta rápida de dados.
 - [ ] **Docker** - Configuração de Dockerfile para deploy.
+- [x] **Login & Autenticação** — Tela de login, fluxo completo (login/logout),
+      sessão persistente no banco, papel (`role`) persistido e verificado a cada
+      requisição, redirecionamento seguro de `/` para não-autenticados, página
+      inicial protegida com navbar compartilhado.
 
 ## Estrutura do projeto
 
@@ -178,3 +183,25 @@ ruff format --check .  # verifica no CI sem alterar arquivos
 > [!NOTE]
 > Se usar o VS Code, instale a extensão _Ruff_ e configure como formatador
 > padrão com _Format on Save_ para formatar automaticamente ao salvar.
+
+### Operacional — Login / Sessão
+
+O login segue o fluxo Django 5.2:
+
+- **Tela de login**: `/login/` (nome da rota `jornadas_login`)
+- **Página inicial protegida**: `/` (roteada como `home`, exige autenticação)
+- **Logout**: `/logout/` (roteado como `jornadas_logout`)
+
+**Sessão:** Django usa backend de sessão baseado em banco
+(`django.contrib.sessions.backends.db`). A tabela `django_session` é criada ao
+executar `migrate`.
+
+**Papel (`role`):** O papel persiste no modelo `User.role` e é verificado a cada
+requisição via `request.user.role`; não há cópia do valor na sessão. Alterar o
+papel no banco reflete imediatamente nas autorizações.
+
+**Criando usuários:** Apenas administradores criam contas, via `/admin/`. O
+comando local `ensure_admin` cria/atualiza o superuser a partir de `.env`.
+
+**Produção (HTTPS):** Habilitar cookies seguros e CSRF com variáveis de
+ambiente; usar `DJANGO_SECRET_KEY` estável.
