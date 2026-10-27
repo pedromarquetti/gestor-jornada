@@ -7,9 +7,13 @@ from django.views.generic import RedirectView, TemplateView
 
 
 class LogoutView(TemplateView):
-    """Custom logout page that redirects to / or /login."""
+    """Logout view that logs out and redirects."""
 
     template_name = "logout.html"
+
+    def post(self, request, *args, **kwargs):
+        auth_logout(request)
+        return redirect("home")
 
     def get(self, request, *args, **kwargs):
         auth_logout(request)
