@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestor de Jornadas{% endblock %}</title>
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <nav>
+        <form method="post" action="{% url 'jornadas_logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Sair</button>
+        </form>
+        <a href="{% url 'home' %}">Home</a>
+    </nav>
+    {% endif %}
+
+    <main>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <small>Gestor de Jornadas</small>
+    </footer>
+</body>
+</html>
