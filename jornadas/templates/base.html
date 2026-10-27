@@ -4,15 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestor de Jornadas{% endblock %}</title>
+    {% load static %}
+    <!-- {% url 'jornadas_logout' as logout_url %} -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
 <body>
     {% if user.is_authenticated %}
-    <nav>
-        <form method="post" action="{% url 'jornadas_logout' %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Sair</button>
-        </form>
-        <a href="{% url 'home' %}">Home</a>
+    <nav class="topbar">
+        <a href="{% url 'home' %}" class="topbar-home">Home</a>
+
+        <div class="user-menu">
+            <button type="button" class="user-icon-btn" onclick="toggleUserMenu(event)">
+                <span class="user-avatar">{{ user.username|slice:"0:1"|upper }}</span>
+            </button>
+
+            <div class="user-dropdown" id="userDropdown">
+                {% if user.is_authenticated %}
+                <p><b>Olá {{ user.username }}!</b> </p>
+
+                <a href="#" onclick="toggleUserMenu(event); return false;" class="dropdown-item">
+                    <span class="dropdown-icon"></span>
+                    Perfil
+                </a>
+
+                <a href="#" onclick="toggleUserMenu(event); return false;" class="dropdown-item">
+                    <span class="dropdown-icon"></span>
+                    Configurações
+                </a>
+                {% endif %}
+                <a href="{% url 'jornadas_logout' %}" class="dropdown-item">
+                    <span class="dropdown-icon"></span>
+                    Sair
+                </a>
+            </div>
+        </div>
     </nav>
     {% endif %}
 
@@ -20,7 +45,7 @@
         {% if messages %}
         <ul class="messages">
             {% for message in messages %}
-            <li>{{ message }}</li>
+            <li class="message {{ message.tags }}">{{ message }}</li>
             {% endfor %}
         </ul>
         {% endif %}
@@ -31,5 +56,7 @@
     <footer>
         <small>Gestor de Jornadas</small>
     </footer>
+
+    <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

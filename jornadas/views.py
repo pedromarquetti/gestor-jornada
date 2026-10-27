@@ -11,14 +11,9 @@ class LogoutView(TemplateView):
 
     template_name = "logout.html"
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         auth_logout(request)
         return redirect("home")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["logged_out"] = True
-        return context
 
 
 class LoginForm(AuthenticationForm):
